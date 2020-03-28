@@ -45,6 +45,10 @@
 #include <moveit_msgs/AttachedCollisionObject.h>
 #include <moveit_msgs/CollisionObject.h>
 
+#include <moveit_msgs/RobotTrajectory.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
+#include <std_msgs/Float64.h>
+
 #include <moveit_visual_tools/moveit_visual_tools.h>
 
 int main(int argc, char** argv)
@@ -126,8 +130,8 @@ int main(int argc, char** argv)
   // end-effector.
   geometry_msgs::Pose target_pose1;
   target_pose1.orientation.y = 1.0;
-  target_pose1.position.x = 1.0;
-  target_pose1.position.y = -0.1;
+  target_pose1.position.x = 1.1;
+  target_pose1.position.y = 0.3;
   target_pose1.position.z = 0.1;
   move_group.setPoseTarget(target_pose1);
 
@@ -139,7 +143,7 @@ int main(int argc, char** argv)
   bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
   ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
-
+  
   // Visualizing plans
   // ^^^^^^^^^^^^^^^^^
   // We can also visualize the plan as a line with markers in RViz.
@@ -148,6 +152,25 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
+
+  moveit_msgs::RobotTrajectory my_trajectory = my_plan.trajectory_;
+  std::vector<std::string> my_joint_names = my_trajectory.joint_trajectory.joint_names;
+  std::cout<<"The joint names:"<<std::endl;
+  for(int i=0; i<my_joint_names.size(); i++)
+  {
+    std::cout<<my_joint_names[i]<<std::endl;
+  }
+  std::vector<trajectory_msgs::JointTrajectoryPoint> my_points = my_trajectory.joint_trajectory.points;
+  std::cout<<"It has "<<my_points.size()<<" points"<<std::endl;
+  for(int i=0; i<my_points.size(); i++)
+  {
+    std::vector<double> my_positions = my_points[i].positions;
+    for(int j=0; j<my_positions.size(); j++)
+    {
+      std::cout<<my_positions[j]<<" ";
+    }
+    std::cout<<std::endl;
+  }
   //visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
 
   // Moving to a pose goal
