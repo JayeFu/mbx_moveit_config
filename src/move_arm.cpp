@@ -110,6 +110,34 @@ int main(int argc, char** argv)
   ROS_INFO_NAMED("tutorial", "Press enter for the next step");
   std::cin.ignore();
 
+  // Above codes are all preparing codes. Real control starts from this line
+
+  // get the current state from the move group, I want to see whether this will change after I move the joints
+  robot_state::RobotStatePtr kinematic_state = move_group.getCurrentState();
+
+  // query the joint names from the joint model group
+  const std::vector<std::string>& joint_names = joint_model_group->getVariableNames();
+
+  // query the joint values of the current state
+  std::vector<double> joint_values;
+  kinematic_state->copyJointGroupPositions(joint_model_group, joint_values);
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+  {
+    ROS_INFO("Joint %s: %f", joint_names[i].c_str(), joint_values[i]);
+  }
+
+  // this time use the joint_state_publisher to change the joint names
+  ROS_INFO_NAMED("tutorial", "Press enter for the next step.");
+  ROS_INFO_NAMED("tutorial", "Please use joint_state_pulisher gui to change joint positions");
+  std::cin.ignore();
+
+  // get the next state
+  kinematic_state = move_group.getCurrentState();
+  kinematic_state->copyJointGroupPositions(joint_model_group, joint_values);
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+  {
+    ROS_INFO("Joint %s: %f", joint_names[i].c_str(), joint_values[i]);
+  }
   
   // We can plan a motion for this group to a desired pose for the
   // end-effector.
@@ -147,11 +175,12 @@ int main(int argc, char** argv)
   
   // get the way points in the trajectory
   std::vector<trajectory_msgs::JointTrajectoryPoint> my_points = my_trajectory.joint_trajectory.points;
-  std::cout<<"It has "<<my_points.size()<<" points"<<std::endl;
+  std::cout<<"This trajectory has "<<my_points.size()<<" points"<<std::endl;
   for(int i=0; i<my_points.size(); i++)
   {
     // get the joint positions at each point
     std::vector<double> my_positions = my_points[i].positions;
+    std::cout<<i<<"th point: ";
     for(int j=0; j<my_positions.size(); j++)
     {
       std::cout<<my_positions[j]<<" ";
